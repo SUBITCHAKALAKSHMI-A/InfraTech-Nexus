@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Tender-Bid Management</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar navbar-expand-lg navbar-dark bg-primary p-3">
+    <div class="container">
+      <a class="navbar-brand" href="#">Smart Tender-Bid</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="#workflow">Workflow</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">SignUp</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="todo.html">ToDo</a></li>
+          <li class="nav-item"><a class="nav-link" href="mytenders.html">My Tenders</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero text-center">
+    <div class="container">
+      <h1 class="display-4">Welcome to Smart Tender-Bid Management</h1>
+      <p class="lead">Efficiently manage tenders, bids, and project execution with our innovative platform.</p>
+      <a href="#features" class="btn btn-light btn-lg">Explore Features</a>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features py-5">
+    <div class="container">
+      <h2 class="text-center mb-4">Key Features</h2>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card p-3">
+            <div class="card-body text-center">
+              <h5 class="card-title">Document Upload & NLP Matching</h5>
+              <p class="text-justify">Upload documents and let AI match tenders with bids for compatibility scoring.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card p-3">
+            <div class="card-body text-center">
+              <h5 class="card-title">Task Segregation</h5>
+              <p class="text-justify">Organize tasks into categories with Gantt charts and progress tracking.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card p-3">
+            <div class="card-body text-center">
+              <h5 class="card-title">Geo-Location & Live Sharing</h5>
+              <p class="text-justify">Track project sites in real-time and share 360° live updates for transparency.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Tenders Section -->
+  <section id="recent-tenders" class="py-5 bg-light">
+    <div class="container">
+      <h2 class="text-center mb-4">Recent Tenders</h2>
+      <div id="tender-list" class="row gy-4">
+        <!-- Dynamic tenders from tender.html will appear here -->
+      </div>
+    </div>
+  </section>
+
+  <script>
+    async function loadTendersOnIndex() {
+      const tenderList = document.getElementById("tender-list");
+      tenderList.innerHTML = "";
+  
+      try {
+        const response = await fetch("https://backend-zxsr.onrender.com/getTenders"); // ✅ Updated URL
+        const storedTenders = await response.json();
+  
+        if (storedTenders.length === 0) {
+          tenderList.innerHTML = `<p class="text-center">No tenders available yet.</p>`;
+          return;
+        }
+  
+        storedTenders.forEach((tender) => {
+          const card = document.createElement("div");
+          card.className = "col-md-4";
+          card.innerHTML = `
+            <div class="card p-3">
+              <div class="card-body">
+                <h5 class="card-title">${tender.title}</h5>
+                <p><strong>Duration:</strong> ${tender.duration}</p>
+                <p><strong>Cost:</strong> ₹${tender.cost}</p>
+                <p><strong>Address:</strong> ${tender.address}</p>
+                <p><strong>Contact:</strong> ${tender.contact}</p>
+                <p><strong>PDF:</strong> <a href="https://backend-zxsr.onrender.com${tender.pdfURL}" target="_blank">View PDF</a></p> <!-- ✅ Updated URL -->
+              </div>
+            </div>
+          `;
+          tenderList.appendChild(card);
+        });
+  
+      } catch (error) {
+        console.error("Error loading tenders:", error);
+        tenderList.innerHTML = `<p class="text-center text-danger">Failed to load tenders.</p>`;
+      }
+    }
+  
+    document.addEventListener("DOMContentLoaded", loadTendersOnIndex);
+  </script>
+  
+
+  
+  
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tender Management</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    #tender-form-container {
+      display: none;
+    }
+    .card-container {
+      position: relative;
+    }
+    .edit-icon, .delete-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      color: #ff9800;
+    }
+    .delete-icon {
+      right: 40px;
+      color: red;
+    }
+    .tender-not-available {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 5px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="#">Smart Tender-Bid</a>
+  </div>
+</header>
+
+<section class="container my-5">
+  <div id="about-container" class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title">How to Upload Tender Documents</h4>
+      <button id="upload-btn" class="btn btn-primary">Upload Tender Docs</button>
+      <a href="http://localhost:8501" target="_blank" class="btn btn-primary">Check Best Bidder</a>
+
+    </div>
+  </div>
+
+  <div id="tender-form-container" class="card p-4 mb-4">
+    <h5 class="card-title">Tender Details</h5>
+    <form id="tender-form" enctype="multipart/form-data">
+      <input type="hidden" id="tender-id">
+      <div class="mb-3">
+        <label for="tender-title" class="form-label">Tender Title</label>
+        <input type="text" class="form-control" id="tender-title" required>
+      </div>
+      <div class="mb-3">
+        <label for="tender-duration" class="form-label">Duration</label>
+        <input type="text" class="form-control" id="tender-duration" required>
+      </div>
+      <div class="mb-3">
+        <label for="tender-cost" class="form-label">Cost Estimation</label>
+        <input type="number" class="form-control" id="tender-cost" required>
+      </div>
+      <div class="mb-3">
+        <label for="tender-address" class="form-label">Address</label>
+        <textarea class="form-control" id="tender-address" required></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="tender-contact" class="form-label">Contact Number</label>
+        <input type="tel" class="form-control" id="tender-contact" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Tender Needed:</label>
+        <input type="checkbox" id="tender-needed" checked>
+      </div>
+      <div class="mb-3">
+        <label for="tender-pdf" class="form-label">Upload PDF</label>
+        <input type="file" class="form-control" id="tender-pdf" accept=".pdf">
+      </div>
+      <button type="submit" class="btn btn-success">Submit</button>
+      <button id="cancel-btn" type="button" class="btn btn-secondary">Cancel</button>
+    </form>
+  </div>
+
+  <div id="tenders-container" class="row gy-4"></div>
+</section>
+
+<script>
+  document.getElementById('upload-btn').addEventListener('click', () => {
+    document.getElementById('tender-form-container').style.display = 'block';
+    document.getElementById('upload-btn').style.display = 'none';
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', () => {
+    document.getElementById('tender-form-container').style.display = 'none';
+    document.getElementById('upload-btn').style.display = 'block';
+    document.getElementById('tender-form').reset();
+    document.getElementById('tender-id').value = ""; // Reset ID field
+  });
+
+  async function displayTenders() {
+    try {
+      const response = await fetch("https://backend-zxsr.onrender.com/getTenders");
+      const storedTenders = await response.json();
+      
+      const tendersContainer = document.getElementById("tenders-container");
+      tendersContainer.innerHTML = "";
+
+      storedTenders.forEach((tender) => {
+        const card = document.createElement("div");
+        card.className = `col-md-4 ${!tender.needed ? 'tender-not-available' : ''}`;
+        card.innerHTML = `
+          <div class="card p-3">
+            <div class="card-body">
+              <i class="fas fa-edit edit-icon" onclick="editTender('${tender._id}')"></i>
+              <i class="fas fa-trash delete-icon" onclick="deleteTender('${tender._id}')"></i>
+              <h5 class="card-title">${tender.title}</h5>
+              <p><strong>Duration:</strong> ${tender.duration}</p>
+              <p><strong>Cost:</strong> ₹${tender.cost}</p>
+              <p><strong>Address:</strong> ${tender.address}</p>
+              <p><strong>Contact:</strong> ${tender.contact}</p>
+              <p><strong>PDF:</strong> <a href="https://backend-zxsr.onrender.com${tender.pdfURL}" target="_blank">View PDF</a></p>
+              <button class="btn btn-sm btn-secondary" onclick="toggleTender('${tender._id}')">
+                ${tender.needed ? "Mark as Not Needed" : "Mark as Needed"}
+              </button>
+            </div>
+          </div>
+        `;
+        tendersContainer.appendChild(card);
+      });
+    } catch (error) {
+      console.error("Error loading tenders:", error);
+    }
+  }
+
+  async function deleteTender(id) {
+    try {
+      await fetch(`https://backend-zxsr.onrender.com/deleteTender/${id}`, { method: "DELETE" });
+      alert("Tender deleted successfully!");
+      displayTenders();
+    } catch (error) {
+      console.error("Error deleting tender:", error);
+    }
+  }
+
+  async function editTender(id) {
+    try {
+      const response = await fetch(`https://backend-zxsr.onrender.com/getTender/${id}`);
+      const tender = await response.json();
+
+      document.getElementById("tender-id").value = tender._id;
+      document.getElementById("tender-title").value = tender.title;
+      document.getElementById("tender-duration").value = tender.duration;
+      document.getElementById("tender-cost").value = tender.cost;
+      document.getElementById("tender-address").value = tender.address;
+      document.getElementById("tender-contact").value = tender.contact;
+      document.getElementById("tender-needed").checked = tender.needed;
+
+      document.getElementById("tender-form-container").style.display = "block";
+      document.getElementById("upload-btn").style.display = "none";
+
+    } catch (error) {
+      console.error("Error fetching tender:", error);
+    }
+  }
+
+  async function toggleTender(id) {
+    try {
+      await fetch(`https://backend-zxsr.onrender.com/toggleTender/${id}`, { method: "PUT" });
+      displayTenders();
+    } catch (error) {
+      console.error("Error toggling tender status:", error);
+    }
+  }
+
+  document.getElementById('tender-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const tenderId = document.getElementById("tender-id").value;
+    const formData = new FormData();
+    formData.append("title", document.getElementById("tender-title").value);
+    formData.append("duration", document.getElementById("tender-duration").value);
+    formData.append("cost", document.getElementById("tender-cost").value);
+    formData.append("address", document.getElementById("tender-address").value);
+    formData.append("contact", document.getElementById("tender-contact").value);
+    formData.append("needed", document.getElementById("tender-needed").checked);
+
+    const fileInput = document.getElementById("tender-pdf");
+    if (fileInput.files.length > 0) {
+      formData.append("pdfFile", fileInput.files[0]); 
+    }
+
+    try {
+      let response;
+      if (tenderId) {
+        // Update tender if ID exists
+        response = await fetch(`https://backend-zxsr.onrender.com/updateTender/${tenderId}`, {
+          method: "PUT",
+          body: formData,
+        });
+      } else {
+        // Add new tender
+        response = await fetch("https://backend-zxsr.onrender.com/addTender", {
+          method: "POST",
+          body: formData,
+        });
+      }
+
+      if (response.ok) {
+        alert(tenderId ? "Tender updated successfully!" : "Tender added successfully!");
+        document.getElementById("tender-form").reset();
+        document.getElementById("tender-form-container").style.display = 'none';
+        document.getElementById("upload-btn").style.display = 'block';
+        displayTenders();
+      } else {
+        alert("Failed to save tender.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred.");
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", displayTenders);
+</script>
+
+
+</body>
+</html>
