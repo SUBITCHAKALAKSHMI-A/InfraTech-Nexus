@@ -7,8 +7,6 @@ services:
     startCommand: node server.js
     envVars:
       - key: MONGO_URI
-      - value: mongodb+srv://subitchakalakshmia23aim:WAGqTmxPDnKo16EC@documentdetails.h4zo0.mongodb.net/TenderDB?retryWrites=true&w=majority&appName=DocumentDetails
-
-        sync: false
+        value: mongodb+srv://subitchakalakshmia23aim:WAGqTmxPDnKo16EC@documentdetails.h4zo0.mongodb.net/TenderDB?retryWrites=true&w=majority&appName=DocumentDetails
       - key: PORT
         value: 5000
