@@ -6,7 +6,8 @@ services:
     buildCommand: npm install
     startCommand: node server.js
     envVars:
-      - key: mongodb+srv://subitchakalakshmia23aim:WAGqTmxPDnKo16EC@documentdetails.h4zo0.mongodb.net/TenderDB?retryWrites=true&w=majority&appName=DocumentDetails
+      - key: MONGO_URI
+      - value: mongodb+srv://subitchakalakshmia23aim:WAGqTmxPDnKo16EC@documentdetails.h4zo0.mongodb.net/TenderDB?retryWrites=true&w=majority&appName=DocumentDetails
 
         sync: false
       - key: PORT
